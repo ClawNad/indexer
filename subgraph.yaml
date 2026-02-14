@@ -1,0 +1,123 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  # ─── ClawNad AgentFactory ──────────────────────────────────────────────────
+  - kind: ethereum
+    name: AgentFactory
+    network: monad
+    source:
+      address: "0xB0C3Db074C3eaaF1DC80445710857f6c39c0e822"
+      abi: AgentFactory
+      startBlock: 55321150
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agent
+        - PlatformStats
+      abis:
+        - name: AgentFactory
+          file: ./abis/AgentFactory.json
+      eventHandlers:
+        - event: AgentLaunched(indexed uint256,indexed address,indexed address,string,string,string,string)
+          handler: handleAgentLaunched
+        - event: AgentRegistered(indexed uint256,indexed address,string,string)
+          handler: handleAgentRegistered
+        - event: AgentTokenLinked(indexed uint256,indexed address)
+          handler: handleAgentTokenLinked
+        - event: AgentEndpointUpdated(indexed uint256,string)
+          handler: handleAgentEndpointUpdated
+        - event: AgentWalletUpdated(indexed uint256,address)
+          handler: handleAgentWalletUpdated
+        - event: AgentDeactivated(indexed uint256)
+          handler: handleAgentDeactivated
+        - event: AgentReactivated(indexed uint256)
+          handler: handleAgentReactivated
+      file: ./src/agent-factory.ts
+
+  # ─── ClawNad RevenueRouter ─────────────────────────────────────────────────
+  - kind: ethereum
+    name: RevenueRouter
+    network: monad
+    source:
+      address: "0xbF5b983F3F75c02d72B452A15885fb69c95b3f2F"
+      abi: RevenueRouter
+      startBlock: 55321150
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - RevenueEvent
+        - Agent
+        - PlatformStats
+      abis:
+        - name: RevenueRouter
+          file: ./abis/RevenueRouter.json
+      eventHandlers:
+        - event: RevenueDeposited(indexed uint256,indexed address,uint256,indexed address)
+          handler: handleRevenueDeposited
+        - event: RevenueDistributed(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleRevenueDistributed
+        - event: BuybackWithdrawn(indexed uint256,indexed address,uint256,indexed address)
+          handler: handleBuybackWithdrawn
+      file: ./src/revenue-router.ts
+
+  # ─── ClawNad AgentRating ───────────────────────────────────────────────────
+  - kind: ethereum
+    name: AgentRating
+    network: monad
+    source:
+      address: "0xEb6850d45Cb177C930256a62ed31093189a0a9a7"
+      abi: AgentRating
+      startBlock: 55321150
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ReputationFeedback
+        - Agent
+        - PlatformStats
+      abis:
+        - name: AgentRating
+          file: ./abis/AgentRating.json
+      eventHandlers:
+        - event: AgentRated(indexed uint256,indexed address,int128,string,string,bytes32)
+          handler: handleAgentRated
+      file: ./src/agent-rating.ts
+
+  # ─── nad.fun BondingCurve ──────────────────────────────────────────────────
+  - kind: ethereum
+    name: BondingCurve
+    network: monad
+    source:
+      address: "0xA7283d07812a02AFB7C09B60f8896bCEA3F90aCE"
+      abi: BondingCurve
+      startBlock: 55321150
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - TokenTrade
+        - TokenSnapshot
+        - Agent
+        - PlatformStats
+      abis:
+        - name: BondingCurve
+          file: ./abis/BondingCurve.json
+      eventHandlers:
+        - event: CurveBuy(indexed address,indexed address,uint256,uint256)
+          handler: handleCurveBuy
+        - event: CurveSell(indexed address,indexed address,uint256,uint256)
+          handler: handleCurveSell
+        - event: CurveSync(indexed address,uint256,uint256,uint256,uint256)
+          handler: handleCurveSync
+        - event: CurveGraduate(indexed address,indexed address)
+          handler: handleCurveGraduate
+      file: ./src/bonding-curve.ts

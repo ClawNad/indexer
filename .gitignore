@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Build & Generated
+build/
+generated/
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
