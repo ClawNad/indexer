@@ -1,0 +1,103 @@
+# ─── Agent ────────────────────────────────────────────────────────────────────
+type Agent @entity(immutable: false) {
+  id: ID! # agentId as string
+  agentId: BigInt!
+  tokenAddress: Bytes # nad.fun token (null if not linked)
+  creator: Bytes!
+  agentWallet: Bytes!
+  agentURI: String!
+  endpoint: String!
+  tokenName: String
+  tokenSymbol: String
+  active: Boolean!
+  launchedAt: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  # Denormalized stats (updated by handlers)
+  totalRevenue: BigInt!
+  totalFeedback: Int!
+  totalScore: BigInt! # sum of all scores (for computing avg)
+  tokenGraduated: Boolean!
+
+  # Relationships
+  trades: [TokenTrade!]! @derivedFrom(field: "agent")
+  feedback: [ReputationFeedback!]! @derivedFrom(field: "agent")
+  revenueEvents: [RevenueEvent!]! @derivedFrom(field: "agent")
+  snapshots: [TokenSnapshot!]! @derivedFrom(field: "agent")
+}
+
+# ─── Token Trade ──────────────────────────────────────────────────────────────
+type TokenTrade @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  agent: Agent
+  tokenAddress: Bytes!
+  trader: Bytes!
+  tradeType: String! # "buy" or "sell"
+  monAmount: BigInt!
+  tokenAmount: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+  blockTimestamp: BigInt!
+}
+
+# ─── Token Snapshot (reserve state) ───────────────────────────────────────────
+type TokenSnapshot @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  agent: Agent
+  tokenAddress: Bytes!
+  realMonReserve: BigInt!
+  realTokenReserve: BigInt!
+  virtualMonReserve: BigInt!
+  virtualTokenReserve: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+# ─── Reputation Feedback ─────────────────────────────────────────────────────
+type ReputationFeedback @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  agent: Agent!
+  rater: Bytes!
+  score: BigInt! # int128 stored as BigInt
+  tag1: String!
+  tag2: String!
+  feedbackHash: Bytes!
+  blockNumber: BigInt!
+  txHash: Bytes!
+  blockTimestamp: BigInt!
+}
+
+# ─── Revenue Event ────────────────────────────────────────────────────────────
+type RevenueEvent @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  agent: Agent!
+  eventType: String! # "deposit", "distribute", "buyback"
+  paymentToken: Bytes!
+  amount: BigInt!
+  # Distribution fields (nullable)
+  agentShare: BigInt
+  buybackShare: BigInt
+  platformFee: BigInt
+  # Buyback fields
+  toAddress: Bytes
+  fromAddress: Bytes
+  blockNumber: BigInt!
+  txHash: Bytes!
+  blockTimestamp: BigInt!
+}
+
+# ─── Token → Agent reverse lookup ─────────────────────────────────────────────
+type TokenAgent @entity(immutable: false) {
+  id: ID! # tokenAddress (hex string)
+  agent: Agent!
+}
+
+# ─── Platform Stats (singleton) ──────────────────────────────────────────────
+type PlatformStats @entity(immutable: false) {
+  id: ID! # "platform"
+  totalAgents: Int!
+  totalTrades: Int!
+  totalRevenue: BigInt!
+  totalFeedback: Int!
+}
